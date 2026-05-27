@@ -11,7 +11,7 @@ export default function Contact() {
     const captchaRef = useRef<HCaptcha>(null);
 
     // Replace this with your live Web3Forms Access Key
-    const WEB3FORMS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY || "YOUR_FALLBACK_KEY";
+    const WEB3FORMS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
 
     const handleVerificationSuccess = (token: string) => {
         setCaptchaToken(token);
@@ -208,7 +208,7 @@ export default function Contact() {
                         <div className="flex justify-start overflow-hidden">
                             <HCaptcha
                                 size="normal"
-                                sitekey={process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY || "10000000-ffff-ffff-ffff-ffffffffffff"}
+                                sitekey={process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY || "f41a92be-4bce-4d50-9006-5e16ab2c6604"}
                                 ref={captchaRef}
                                 onVerify={handleVerificationSuccess}
                                 onExpire={() => setCaptchaToken(null)}
