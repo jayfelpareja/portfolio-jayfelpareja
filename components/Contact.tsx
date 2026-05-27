@@ -14,30 +14,48 @@ export default function Contact() {
         "idle" | "submitting" | "success" | "error"
     >("idle");
 
-    const [errorMessage, setErrorMessage] = useState("");
-    const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+    const [responseMessage, setResponseMessage] = useState("");
+    const [captchaToken, setCaptchaToken] = useState("");
 
     const captchaRef = useRef<HCaptcha>(null);
 
-    const handleVerificationSuccess = (token: string) => {
-        setCaptchaToken(token);
-    };
-
     const resetCaptcha = () => {
         captchaRef.current?.resetCaptcha();
-        setCaptchaToken(null);
+        setCaptchaToken("");
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
         if (!captchaToken) {
-            alert("Please complete the hCaptcha verification.");
+            setStatus("error");
+            setResponseMessage("Please complete the hCaptcha verification.");
             return;
         }
 
         setStatus("submitting");
-        setErrorMessage("");
+        setResponseMessage("");
+
+        const form = e.currentTarget;
+
+        const formDataToSend = {
+            access_key: process.env.NEXT_PUBLIC_WEB3FORMS_KEY,
+
+            // REQUIRED FOR HCAPTCHA
+            captcha: "hcaptcha",
+
+            // FORM DATA
+            name: formData.name,
+            email: formData.email,
+            message: formData.message,
+
+            // OPTIONAL
+            subject: "New Portfolio Message",
+            from_name: "Portfolio Contact Form",
+
+            // HCAPTCHA TOKEN
+            "h-captcha-response": captchaToken,
+        };
 
         try {
             const response = await fetch(
@@ -48,20 +66,7 @@ export default function Contact() {
                         "Content-Type": "application/json",
                         Accept: "application/json",
                     },
-                    body: JSON.stringify({
-                        access_key:
-                            process.env.NEXT_PUBLIC_WEB3FORMS_KEY,
-
-                        subject: "New Portfolio Contact Form Submission",
-
-                        from_name: formData.name,
-
-                        name: formData.name,
-                        email: formData.email,
-                        message: formData.message,
-
-                        "h-captcha-response": captchaToken,
-                    }),
+                    body: JSON.stringify(formDataToSend),
                 }
             );
 
@@ -72,6 +77,10 @@ export default function Contact() {
             if (result.success) {
                 setStatus("success");
 
+                setResponseMessage(
+                    "✓ Message sent successfully!"
+                );
+
                 setFormData({
                     name: "",
                     email: "",
@@ -79,12 +88,14 @@ export default function Contact() {
                 });
 
                 resetCaptcha();
+
+                form.reset();
             } else {
                 setStatus("error");
 
-                setErrorMessage(
+                setResponseMessage(
                     result.message ||
-                    "Failed to send message."
+                    "Something went wrong. Please try again."
                 );
 
                 resetCaptcha();
@@ -94,8 +105,8 @@ export default function Contact() {
 
             setStatus("error");
 
-            setErrorMessage(
-                "Network error. Please try again."
+            setResponseMessage(
+                "Network error. Please try again later."
             );
 
             resetCaptcha();
@@ -108,7 +119,7 @@ export default function Contact() {
 
                 {/* LEFT SIDE */}
                 <div className="md:col-span-3 space-y-6">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-brand-muted/30 bg-brand-accent/5 text-[11px] font-mono text-brand-accent max-w-full tracking-wide">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-brand-muted/30 bg-brand-accent/5 text-[11px] font-mono text-brand-accent">
                         <span className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-pulse" />
                         <span>Why Work With Me?</span>
                     </div>
@@ -131,10 +142,13 @@ export default function Contact() {
                 >
                     <div className="p-6 space-y-5">
 
+                        {/* NAME + EMAIL */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
                             <input
                                 type="text"
                                 required
+                                placeholder="Your Name"
                                 value={formData.name}
                                 onChange={(e) =>
                                     setFormData({
@@ -142,13 +156,13 @@ export default function Contact() {
                                         name: e.target.value,
                                     })
                                 }
-                                placeholder="Your name"
                                 className="w-full h-10 px-3 rounded-xl border border-brand-muted/20 bg-background/50 text-xs"
                             />
 
                             <input
                                 type="email"
                                 required
+                                placeholder="you@example.com"
                                 value={formData.email}
                                 onChange={(e) =>
                                     setFormData({
@@ -156,14 +170,15 @@ export default function Contact() {
                                         email: e.target.value,
                                     })
                                 }
-                                placeholder="you@example.com"
                                 className="w-full h-10 px-3 rounded-xl border border-brand-muted/20 bg-background/50 text-xs"
                             />
                         </div>
 
+                        {/* MESSAGE */}
                         <textarea
                             required
                             rows={4}
+                            placeholder="Tell me about your project..."
                             value={formData.message}
                             onChange={(e) =>
                                 setFormData({
@@ -171,29 +186,29 @@ export default function Contact() {
                                     message: e.target.value,
                                 })
                             }
-                            placeholder="Tell me about your project..."
                             className="w-full p-3 rounded-xl border border-brand-muted/20 bg-background/50 text-xs resize-none"
                         />
 
-                        {/* CAPTCHA */}
+                        {/* HCAPTCHA */}
                         <div className="overflow-hidden">
                             <HCaptcha
                                 sitekey={
                                     process.env
                                         .NEXT_PUBLIC_HCAPTCHA_SITE_KEY!
                                 }
+                                onVerify={(token) =>
+                                    setCaptchaToken(token)
+                                }
                                 ref={captchaRef}
-                                onVerify={handleVerificationSuccess}
-                                onExpire={resetCaptcha}
                                 theme="dark"
                             />
                         </div>
 
-                        {/* SUBMIT */}
+                        {/* BUTTON */}
                         <button
                             type="submit"
                             disabled={
-                                status === "submitting" || !captchaToken
+                                status === "submitting"
                             }
                             className="flex h-11 w-full items-center justify-center rounded-xl bg-foreground text-sm font-medium text-background transition-all disabled:opacity-40"
                         >
@@ -202,17 +217,15 @@ export default function Contact() {
                                 : "Get Started →"}
                         </button>
 
-                        {/* SUCCESS */}
-                        {status === "success" && (
-                            <p className="text-[11px] font-mono text-emerald-500 text-center">
-                                ✓ Message sent successfully!
-                            </p>
-                        )}
-
-                        {/* ERROR */}
-                        {status === "error" && (
-                            <p className="text-[11px] font-mono text-rose-500 text-center">
-                                ✕ {errorMessage}
+                        {/* RESPONSE */}
+                        {responseMessage && (
+                            <p
+                                className={`text-[11px] font-mono text-center ${status === "success"
+                                        ? "text-emerald-500"
+                                        : "text-rose-500"
+                                    }`}
+                            >
+                                {responseMessage}
                             </p>
                         )}
                     </div>
