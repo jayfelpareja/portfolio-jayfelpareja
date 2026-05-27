@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Clean background structure with your custom tone -->
+  <circle cx="50" cy="50" r="48" fill="#0D1B2A" />
+  
+  <!-- "JP" Minimalist Text Icon -->
+  <text 
+    x="50%" 
+    y="53%" 
+    font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" 
+    font-weight="700" 
+    font-size="42" 
+    fill="#ffffff" 
+    text-anchor="middle" 
+    dominant-baseline="middle"
+    letter-spacing="-0.05em"
+  >
+    JP
+  </text>
+</svg>
