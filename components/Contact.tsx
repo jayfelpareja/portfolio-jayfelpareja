@@ -10,17 +10,18 @@ export default function Contact() {
 
     const captchaRef = useRef<HCaptcha>(null);
 
-    // Replace this with your live Web3Forms Access Key
-    const WEB3FORMS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
-
     const handleVerificationSuccess = (token: string) => {
         setCaptchaToken(token);
+    };
+
+    const resetCaptcha = () => {
+        captchaRef.current?.resetCaptcha();
+        setCaptchaToken(null);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Guard clause: Prevent submission if hCaptcha hasn't been completed
         if (!captchaToken) {
             alert("Please verify that you are human via the hCaptcha checkpoint.");
             return;
@@ -36,11 +37,11 @@ export default function Contact() {
                     Accept: "application/json",
                 },
                 body: JSON.stringify({
-                    access_key: WEB3FORMS_KEY,
+                    access_key: process.env.NEXT_PUBLIC_WEB3FORMS_KEY,
                     name: formData.name,
                     email: formData.email,
                     message: formData.message,
-                    "h-captcha-response": captchaToken, // Web3Forms automatically recognizes this field
+                    "h-captcha-response": captchaToken,
                 }),
             });
 
@@ -49,13 +50,18 @@ export default function Contact() {
             if (result.success) {
                 setStatus("success");
                 setFormData({ name: "", email: "", message: "" });
-                setCaptchaToken(null);
-                captchaRef.current?.resetCaptcha(); // Clear the widget state
+                // Reset captcha after successful submission
+                resetCaptcha();
             } else {
+                console.error("Submission error:", result.message);
                 setStatus("error");
+                // Reset captcha so user can try again with a fresh token
+                resetCaptcha();
             }
         } catch (error) {
+            console.error("Network error:", error);
             setStatus("error");
+            resetCaptcha();
         }
     };
 
@@ -72,7 +78,7 @@ export default function Contact() {
                     </div>
 
                     <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground leading-tight">
-                        Let’s Build Something <br /> That Converts
+                        Let's Build Something <br /> That Converts
                     </h2>
 
                     <p className="text-base text-foreground/70 max-w-xl font-sans font-light leading-relaxed">
@@ -211,7 +217,7 @@ export default function Contact() {
                                 sitekey={process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY!}
                                 ref={captchaRef}
                                 onVerify={handleVerificationSuccess}
-                                onExpire={() => setCaptchaToken(null)}
+                                onExpire={resetCaptcha}
                                 theme="dark"
                             />
                         </div>
