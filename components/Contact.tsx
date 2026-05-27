@@ -14,7 +14,12 @@ export default function Contact() {
         "idle" | "submitting" | "success" | "error"
     >("idle");
 
-    const [responseMessage, setResponseMessage] = useState("");
+    const [responseMessage, setResponseMessage] =
+        useState("");
+
+    // FIXED: Store captcha token properly
+    const [captchaToken, setCaptchaToken] =
+        useState<string | null>(null);
 
     const captchaRef = useRef<HCaptcha>(null);
 
@@ -22,36 +27,44 @@ export default function Contact() {
     const WEB3FORMS_KEY =
         process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
 
+    // FIXED: Proper hCaptcha handlers
+    const handleVerificationSuccess = (
+        token: string
+    ) => {
+        setCaptchaToken(token);
+    };
+
+    const handleVerificationExpire = () => {
+        setCaptchaToken(null);
+    };
+
     const handleSubmit = async (
         e: React.FormEvent
     ) => {
         e.preventDefault();
 
+        // FIXED: Validate captcha first
+        if (!captchaToken) {
+            setStatus("error");
+
+            setResponseMessage(
+                "Please complete the hCaptcha verification."
+            );
+
+            return;
+        }
+
         setStatus("submitting");
         setResponseMessage("");
 
         try {
-            // Execute Invisible hCaptcha
-            const tokenResponse =
-                await captchaRef.current?.execute({
-                    async: true,
-                });
-
-            // Validation check
-            if (!tokenResponse?.response) {
-                setStatus("error");
-                setResponseMessage(
-                    "Could not validate hCaptcha. Please try later."
-                );
-                return;
-            }
-
-            // Web3Forms Payload
+            // FIXED: Correct Web3Forms payload
             const payload = {
                 access_key: WEB3FORMS_KEY,
 
-                // REQUIRED FOR HCAPTCHA
-                captcha: "hcaptcha",
+                name: formData.name,
+                email: formData.email,
+                message: formData.message,
 
                 subject:
                     "New Portfolio Contact Form Submission",
@@ -59,13 +72,9 @@ export default function Contact() {
                 from_name:
                     "Jayfel Pareja Portfolio",
 
-                name: formData.name,
-                email: formData.email,
-                message: formData.message,
-
-                // REQUIRED HCAPTCHA TOKEN
-                "h-captcha-response":
-                    tokenResponse.response,
+                // FIXED: Web3Forms expects THIS field
+                "g-recaptcha-response":
+                    captchaToken,
             };
 
             const response = await fetch(
@@ -92,12 +101,15 @@ export default function Contact() {
                     "✓ Message sent successfully! Speak soon."
                 );
 
-                // Reset Form
+                // Reset form
                 setFormData({
                     name: "",
                     email: "",
                     message: "",
                 });
+
+                // Reset captcha
+                setCaptchaToken(null);
 
                 captchaRef.current?.resetCaptcha();
             } else {
@@ -107,6 +119,8 @@ export default function Contact() {
                     result.message ||
                     "Something went wrong. Please try again."
                 );
+
+                setCaptchaToken(null);
 
                 captchaRef.current?.resetCaptcha();
             }
@@ -119,6 +133,8 @@ export default function Contact() {
                 "Network error. Please try again later."
             );
 
+            setCaptchaToken(null);
+
             captchaRef.current?.resetCaptcha();
         }
     };
@@ -130,7 +146,7 @@ export default function Contact() {
         >
             <div className="max-w-[1440px] mx-auto px-1 grid grid-cols-1 md:grid-cols-5 gap-10 md:gap-16 items-start">
 
-                {/* LEFT COLUMN: Strategic Headline & Core Telemetry */}
+                {/* LEFT COLUMN */}
                 <div className="md:col-span-3 space-y-6">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-brand-muted/30 bg-brand-accent/5 text-[11px] font-mono text-brand-accent max-w-full tracking-wide">
                         <span className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-pulse" />
@@ -155,6 +171,7 @@ export default function Contact() {
                             <span className="block text-foreground/60 font-semibold">
                                 Availability
                             </span>
+
                             <span>
                                 Accepting Projects
                             </span>
@@ -164,6 +181,7 @@ export default function Contact() {
                             <span className="block text-foreground/60 font-semibold">
                                 Location
                             </span>
+
                             <span>Bulacan, PH</span>
                         </div>
                     </div>
@@ -229,19 +247,19 @@ export default function Contact() {
                     </div>
                 </div>
 
-                {/* RIGHT COLUMN: Interactive Control Panel Form */}
+                {/* FORM */}
                 <form
                     onSubmit={handleSubmit}
                     className="md:col-span-2 w-full rounded-2xl border border-brand-muted/20 bg-brand-surface/5 dark:bg-brand-surface/40 backdrop-blur-xs shadow-xs overflow-hidden flex flex-col"
                 >
-                    {/* Header Utility Bar */}
+                    {/* Header */}
                     <div className="flex items-center justify-between px-4 py-3 bg-brand-surface/10 dark:bg-brand-surface/30 border-b border-brand-muted/10">
                         <div className="flex items-center gap-1.5">
                             <span
                                 className={`w-2 h-2 rounded-full ${status ===
-                                    "submitting"
-                                    ? "bg-amber-500 animate-pulse"
-                                    : "bg-brand-accent/60"
+                                        "submitting"
+                                        ? "bg-amber-500 animate-pulse"
+                                        : "bg-brand-accent/60"
                                     }`}
                             />
 
@@ -271,7 +289,7 @@ export default function Contact() {
                             </p>
                         </div>
 
-                        {/* Form Inputs */}
+                        {/* Inputs */}
                         <div className="space-y-3">
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -350,6 +368,7 @@ export default function Contact() {
                             </div>
                         </div>
 
+                        {/* hCaptcha */}
                         <div className="flex justify-start overflow-hidden">
                             <HCaptcha
                                 ref={captchaRef}
@@ -358,19 +377,23 @@ export default function Contact() {
                                         .NEXT_PUBLIC_HCAPTCHA_SITE_KEY ||
                                     ""
                                 }
-                                size="normal"
+                                onVerify={
+                                    handleVerificationSuccess
+                                }
+                                onExpire={
+                                    handleVerificationExpire
+                                }
                                 theme="dark"
-                                onVerify={(token) => {
-                                    console.log("hCaptcha Token:", token);
-                                }}
                             />
                         </div>
+
                         {/* Submit Button */}
                         <button
                             type="submit"
                             disabled={
                                 status ===
-                                "submitting"
+                                "submitting" ||
+                                !captchaToken
                             }
                             className="flex h-11 w-full items-center justify-center rounded-xl bg-foreground text-sm font-medium text-background transition-all hover:opacity-95 active:scale-[0.99] shadow-xs cursor-pointer group disabled:opacity-40 disabled:cursor-not-allowed"
                         >
@@ -389,13 +412,13 @@ export default function Contact() {
                                 )}
                         </button>
 
-                        {/* Status Feedback */}
+                        {/* Status */}
                         {responseMessage && (
                             <p
                                 className={`text-[11px] font-mono text-center ${status ===
-                                    "success"
-                                    ? "text-emerald-500"
-                                    : "text-rose-500"
+                                        "success"
+                                        ? "text-emerald-500"
+                                        : "text-rose-500"
                                     }`}
                             >
                                 {responseMessage}
