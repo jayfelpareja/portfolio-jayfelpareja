@@ -14,43 +14,27 @@ export default function Contact() {
         "idle" | "submitting" | "success" | "error"
     >("idle");
 
-    const [responseMessage, setResponseMessage] =
-        useState("");
+    const [responseMessage, setResponseMessage] = useState("");
 
-    // FIXED: Store captcha token properly
-    const [captchaToken, setCaptchaToken] =
-        useState<string | null>(null);
+    const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
     const captchaRef = useRef<HCaptcha>(null);
 
-    // Web3Forms Access Key
-    const WEB3FORMS_KEY =
-        process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
-
-    // FIXED: Proper hCaptcha handlers
-    const handleVerificationSuccess = (
-        token: string
-    ) => {
+    const handleVerificationSuccess = (token: string) => {
         setCaptchaToken(token);
     };
 
-    const handleVerificationExpire = () => {
+    const resetCaptcha = () => {
         setCaptchaToken(null);
+        captchaRef.current?.resetCaptcha();
     };
 
-    const handleSubmit = async (
-        e: React.FormEvent
-    ) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // FIXED: Validate captcha first
         if (!captchaToken) {
             setStatus("error");
-
-            setResponseMessage(
-                "Please complete the hCaptcha verification."
-            );
-
+            setResponseMessage("Please complete hCaptcha verification.");
             return;
         }
 
@@ -58,92 +42,49 @@ export default function Contact() {
         setResponseMessage("");
 
         try {
-            // FIXED: Correct Web3Forms payload
-            const payload = {
-                access_key: WEB3FORMS_KEY,
-
-                name: formData.name,
-                email: formData.email,
-                message: formData.message,
-
-                subject:
-                    "New Portfolio Contact Form Submission",
-
-                from_name:
-                    "Jayfel Pareja Portfolio",
-
-                // FIXED: Web3Forms expects THIS field
-                "g-recaptcha-response":
-                    captchaToken,
-            };
-
-            const response = await fetch(
-                "https://api.web3forms.com/submit",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type":
-                            "application/json",
-                        Accept: "application/json",
-                    },
-                    body: JSON.stringify(payload),
-                }
-            );
+            const response = await fetch("https://api.web3forms.com/submit", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                },
+                body: JSON.stringify({
+                    access_key: process.env.NEXT_PUBLIC_WEB3FORMS_KEY,
+                    name: formData.name,
+                    email: formData.email,
+                    message: formData.message,
+                    subject: "New Portfolio Contact Form Submission",
+                    from_name: "Jayfel Pareja Portfolio",
+                    // NOTE: "h-captcha-response" is intentionally omitted.
+                    // Sending it causes Web3Forms to attempt server-side hCaptcha
+                    // validation even when Captcha Protection is set to None.
+                    // hCaptcha still protects the form on the frontend — the submit
+                    // button stays disabled until the user completes the widget.
+                }),
+            });
 
             const result = await response.json();
 
-            console.log(result);
-
             if (result.success) {
                 setStatus("success");
-
-                setResponseMessage(
-                    "✓ Message sent successfully! Speak soon."
-                );
-
-                // Reset form
-                setFormData({
-                    name: "",
-                    email: "",
-                    message: "",
-                });
-
-                // Reset captcha
-                setCaptchaToken(null);
-
-                captchaRef.current?.resetCaptcha();
+                setResponseMessage("✓ Message sent successfully! Speak soon.");
+                setFormData({ name: "", email: "", message: "" });
+                resetCaptcha();
             } else {
                 setStatus("error");
-
-                setResponseMessage(
-                    result.message ||
-                    "Something went wrong. Please try again."
-                );
-
-                setCaptchaToken(null);
-
-                captchaRef.current?.resetCaptcha();
+                setResponseMessage(result.message || "Something went wrong. Please try again.");
+                resetCaptcha();
             }
         } catch (error) {
             console.error(error);
-
             setStatus("error");
-
-            setResponseMessage(
-                "Network error. Please try again later."
-            );
-
-            setCaptchaToken(null);
-
-            captchaRef.current?.resetCaptcha();
+            setResponseMessage("Network error. Please try again later.");
+            resetCaptcha();
         }
     };
 
     return (
-        <section
-            id="getintouch"
-            className="py-16 md:py-24"
-        >
+        <section id="getintouch" className="py-16 md:py-24">
             <div className="max-w-[1440px] mx-auto px-1 grid grid-cols-1 md:grid-cols-5 gap-10 md:gap-16 items-start">
 
                 {/* LEFT COLUMN */}
@@ -154,53 +95,36 @@ export default function Contact() {
                     </div>
 
                     <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground leading-tight">
-                        Let’s Build Something <br />
+                        Let's Build Something <br />
                         That Converts
                     </h2>
 
                     <p className="text-base text-foreground/70 max-w-xl font-sans font-light leading-relaxed">
-                        Need a website that looks
-                        great and actually converts?
-                        I create fast, refined, and
-                        user-focused experiences
-                        that help your business grow.
+                        Need a website that looks great and actually converts? I create fast, refined, and user-focused experiences that help your business grow.
                     </p>
 
                     <div className="pt-4 grid grid-cols-2 gap-4 max-w-md text-[11px] font-mono text-foreground/40 border-t border-brand-muted/10">
                         <div>
-                            <span className="block text-foreground/60 font-semibold">
-                                Availability
-                            </span>
-
-                            <span>
-                                Accepting Projects
-                            </span>
+                            <span className="block text-foreground/60 font-semibold">Availability</span>
+                            <span>Accepting Projects</span>
                         </div>
-
                         <div>
-                            <span className="block text-foreground/60 font-semibold">
-                                Location
-                            </span>
-
+                            <span className="block text-foreground/60 font-semibold">Location</span>
                             <span>Bulacan, PH</span>
                         </div>
                     </div>
 
-                    {/* Footer Directory Action */}
+                    {/* Footer */}
                     <div className="space-y-1">
                         <span className="text-[10px] font-mono text-foreground/60 uppercase tracking-widest block">
                             More About Code
                         </span>
-
                         <p className="text-xs text-foreground/50">
-                            Take a look at
-                            behind-the-scenes
-                            building blocks of how I
-                            build websites.
+                            Take a look at behind-the-scenes building blocks of how I build websites.
                         </p>
                     </div>
 
-                    {/* Action Row Container */}
+                    {/* Socials */}
                     <div className="flex items-center gap-2.5 mt-4">
                         <a
                             href="https://github.com/jayfelpareja"
@@ -256,63 +180,41 @@ export default function Contact() {
                     <div className="flex items-center justify-between px-4 py-3 bg-brand-surface/10 dark:bg-brand-surface/30 border-b border-brand-muted/10">
                         <div className="flex items-center gap-1.5">
                             <span
-                                className={`w-2 h-2 rounded-full ${status ===
-                                        "submitting"
+                                className={`w-2 h-2 rounded-full ${status === "submitting"
                                         ? "bg-amber-500 animate-pulse"
                                         : "bg-brand-accent/60"
                                     }`}
                             />
-
                             <span className="text-[10px] font-mono text-foreground/50 tracking-wider">
-                                Let's Talk About Your
-                                Project
+                                Let's Talk About Your Project
                             </span>
                         </div>
-
-                        <span className="text-[9px] font-mono text-foreground/30 font-medium">
-                            v1.0.01
-                        </span>
+                        <span className="text-[9px] font-mono text-foreground/30 font-medium">v1.0.01</span>
                     </div>
 
                     {/* Form Body */}
                     <div className="p-6 space-y-5">
-
                         <div className="space-y-1">
                             <span className="text-[10px] font-mono text-brand-accent uppercase tracking-widest block">
                                 Drop a Message
                             </span>
-
                             <p className="text-xs text-foreground/50">
-                                Send a direct note
-                                right into my inbox to
-                                start a conversation.
+                                Send a direct note right into my inbox to start a conversation.
                             </p>
                         </div>
 
                         {/* Inputs */}
                         <div className="space-y-3">
-
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-mono text-foreground/40 uppercase tracking-wider">
                                         Name
                                     </label>
-
                                     <input
                                         type="text"
                                         required
-                                        value={
-                                            formData.name
-                                        }
-                                        onChange={(e) =>
-                                            setFormData({
-                                                ...formData,
-                                                name: e
-                                                    .target
-                                                    .value,
-                                            })
-                                        }
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                         placeholder="Your name"
                                         className="w-full h-10 px-3 rounded-xl border border-brand-muted/20 bg-background/50 dark:bg-brand-surface/20 text-xs text-foreground placeholder:text-foreground/30 focus:outline-hidden focus:border-brand-accent/50 transition-colors"
                                     />
@@ -322,21 +224,11 @@ export default function Contact() {
                                     <label className="text-[10px] font-mono text-foreground/40 uppercase tracking-wider">
                                         Email Address
                                     </label>
-
                                     <input
                                         type="email"
                                         required
-                                        value={
-                                            formData.email
-                                        }
-                                        onChange={(e) =>
-                                            setFormData({
-                                                ...formData,
-                                                email: e
-                                                    .target
-                                                    .value,
-                                            })
-                                        }
+                                        value={formData.email}
+                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                         placeholder="you@example.com"
                                         className="w-full h-10 px-3 rounded-xl border border-brand-muted/20 bg-background/50 dark:bg-brand-surface/20 text-xs text-foreground placeholder:text-foreground/30 focus:outline-hidden focus:border-brand-accent/50 transition-colors"
                                     />
@@ -347,21 +239,11 @@ export default function Contact() {
                                 <label className="text-[10px] font-mono text-foreground/40 uppercase tracking-wider">
                                     Project Details
                                 </label>
-
                                 <textarea
                                     required
                                     rows={3}
-                                    value={
-                                        formData.message
-                                    }
-                                    onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            message:
-                                                e.target
-                                                    .value,
-                                        })
-                                    }
+                                    value={formData.message}
+                                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                                     placeholder="Tell me briefly about what you're trying to build..."
                                     className="w-full p-3 rounded-xl border border-brand-muted/20 bg-background/50 dark:bg-brand-surface/20 text-xs text-foreground placeholder:text-foreground/30 focus:outline-hidden focus:border-brand-accent/50 transition-colors resize-none"
                                 />
@@ -372,53 +254,29 @@ export default function Contact() {
                         <div className="flex justify-start overflow-hidden">
                             <HCaptcha
                                 ref={captchaRef}
-                                sitekey={
-                                    process.env
-                                        .NEXT_PUBLIC_HCAPTCHA_SITE_KEY ||
-                                    ""
-                                }
-                                onVerify={
-                                    handleVerificationSuccess
-                                }
-                                onExpire={
-                                    handleVerificationExpire
-                                }
+                                sitekey={process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY || ""}
+                                onVerify={handleVerificationSuccess}
+                                onExpire={resetCaptcha}
                                 theme="dark"
                             />
                         </div>
 
-                        {/* Submit Button */}
+                        {/* Submit */}
                         <button
                             type="submit"
-                            disabled={
-                                status ===
-                                "submitting" ||
-                                !captchaToken
-                            }
+                            disabled={status === "submitting" || !captchaToken}
                             className="flex h-11 w-full items-center justify-center rounded-xl bg-foreground text-sm font-medium text-background transition-all hover:opacity-95 active:scale-[0.99] shadow-xs cursor-pointer group disabled:opacity-40 disabled:cursor-not-allowed"
                         >
-                            <span>
-                                {status ===
-                                    "submitting"
-                                    ? "Sending..."
-                                    : "Get Started"}
-                            </span>
-
-                            {status !==
-                                "submitting" && (
-                                    <span className="ml-1.5 transition-transform duration-300 group-hover:translate-x-0.5">
-                                        &rarr;
-                                    </span>
-                                )}
+                            <span>{status === "submitting" ? "Sending..." : "Get Started"}</span>
+                            {status !== "submitting" && (
+                                <span className="ml-1.5 transition-transform duration-300 group-hover:translate-x-0.5">&rarr;</span>
+                            )}
                         </button>
 
                         {/* Status */}
                         {responseMessage && (
                             <p
-                                className={`text-[11px] font-mono text-center ${status ===
-                                        "success"
-                                        ? "text-emerald-500"
-                                        : "text-rose-500"
+                                className={`text-[11px] font-mono text-center ${status === "success" ? "text-emerald-500" : "text-rose-500"
                                     }`}
                             >
                                 {responseMessage}
