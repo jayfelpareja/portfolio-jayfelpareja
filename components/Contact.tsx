@@ -208,7 +208,7 @@ export default function Contact() {
                         <div className="flex justify-start overflow-hidden">
                             <HCaptcha
                                 size="normal"
-                                sitekey={process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY || "f41a92be-4bce-4d50-9006-5e16ab2c6604"}
+                                sitekey={process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY!}
                                 ref={captchaRef}
                                 onVerify={handleVerificationSuccess}
                                 onExpire={() => setCaptchaToken(null)}
