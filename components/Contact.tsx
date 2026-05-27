@@ -239,9 +239,9 @@ export default function Contact() {
                         <div className="flex items-center gap-1.5">
                             <span
                                 className={`w-2 h-2 rounded-full ${status ===
-                                        "submitting"
-                                        ? "bg-amber-500 animate-pulse"
-                                        : "bg-brand-accent/60"
+                                    "submitting"
+                                    ? "bg-amber-500 animate-pulse"
+                                    : "bg-brand-accent/60"
                                     }`}
                             />
 
@@ -350,18 +350,21 @@ export default function Contact() {
                             </div>
                         </div>
 
-                        {/* hCaptcha */}
-                        <HCaptcha
-                            ref={captchaRef}
-                            sitekey={
-                                process.env
-                                    .NEXT_PUBLIC_HCAPTCHA_SITE_KEY ||
-                                ""
-                            }
-                            size="invisible"
-                            theme="dark"
-                        />
-
+                        <div className="flex justify-start overflow-hidden">
+                            <HCaptcha
+                                ref={captchaRef}
+                                sitekey={
+                                    process.env
+                                        .NEXT_PUBLIC_HCAPTCHA_SITE_KEY ||
+                                    ""
+                                }
+                                size="normal"
+                                theme="dark"
+                                onVerify={(token) => {
+                                    console.log("hCaptcha Token:", token);
+                                }}
+                            />
+                        </div>
                         {/* Submit Button */}
                         <button
                             type="submit"
@@ -390,9 +393,9 @@ export default function Contact() {
                         {responseMessage && (
                             <p
                                 className={`text-[11px] font-mono text-center ${status ===
-                                        "success"
-                                        ? "text-emerald-500"
-                                        : "text-rose-500"
+                                    "success"
+                                    ? "text-emerald-500"
+                                    : "text-rose-500"
                                     }`}
                             >
                                 {responseMessage}
