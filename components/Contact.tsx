@@ -106,7 +106,7 @@ export default function Contact() {
                     <div className="pt-4 grid grid-cols-2 gap-4 max-w-md text-[11px] font-mono text-foreground/40 border-t border-brand-muted/10">
                         <div>
                             <span className="block text-foreground/60 font-semibold">Availability</span>
-                            <span>Accepting Projects</span>
+                            <span>Full-time | Part-time | Project</span>
                         </div>
                         <div>
                             <span className="block text-foreground/60 font-semibold">Location</span>
@@ -168,6 +168,28 @@ export default function Contact() {
                                 <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
                             </svg>
                         </a>
+                        <a
+                            href="https://linkedin.com/in/jayfelpareja"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="View LinkedIn Profile"
+                            className="inline-flex items-center justify-center w-10 h-10 rounded-xl border border-brand-muted/20 bg-background text-foreground transition-all hover:bg-foreground/5 hover:border-brand-accent/30 active:scale-[0.95] shadow-xs cursor-pointer"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="w-5 h-5"
+                            >
+                                <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z" />
+                                <rect x="2" y="9" width="4" height="12" />
+                                <circle cx="4" cy="4" r="2" />
+                            </svg>
+                        </a>
                     </div>
                 </div>
 
@@ -181,8 +203,8 @@ export default function Contact() {
                         <div className="flex items-center gap-1.5">
                             <span
                                 className={`w-2 h-2 rounded-full ${status === "submitting"
-                                        ? "bg-amber-500 animate-pulse"
-                                        : "bg-brand-accent/60"
+                                    ? "bg-amber-500 animate-pulse"
+                                    : "bg-brand-accent/60"
                                     }`}
                             />
                             <span className="text-[10px] font-mono text-foreground/50 tracking-wider">

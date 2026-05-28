@@ -26,28 +26,28 @@ const featuredProjects: Project[] = [
     },
     {
         title: "02. Chelsey Real Estate",
-        description: "The Task Ninja provides dedicated virtual assistant and operations support for busy entrepreneurs and business owners across the US.",
+        description: "Chelsey Real Estate is a modern real estate platform focused on helping clients buy, sell, and invest in premium properties with ease and confidence through a seamless digital experience.",
         tags: ["WordPress", "Elementor", "Yoast SEO", "Contact Form 7", "PHP"],
         link: "https://chelseyrealestate.com/",
         image: "/images/chelseyrealestate.png"
     },
     {
         title: "03. Out East Therapy",
-        description: "The Task Ninja provides dedicated virtual assistant and operations support for busy entrepreneurs and business owners across the US.",
+        description: "Out East Therapy offers compassionate mental health counseling and therapy services, helping individuals and families improve emotional wellness through personalized and professional care.",
         tags: ["WordPress", "Elementor", "Astra", "Contact Form 7", "PHP"],
         link: "https://outeasttherapy.com/",
         image: "/images/outeasttherapy.png"
     },
     {
         title: "04. Luntian",
-        description: "The Task Ninja provides dedicated virtual assistant and operations support for busy entrepreneurs and business owners across the US.",
+        description: "Luntian is a local clothing brand based in Surigao that showcases minimalist streetwear and lifestyle apparel inspired by Filipino culture, nature, and modern fashion trends.",
         tags: ["WordPress", "Elementor", "Astra", "Contact Form 7", "PHP"],
         link: "#",
         image: "/images/lntn.png"
     },
     {
         title: "05. Manila Cafe",
-        description: "The Task Ninja provides dedicated virtual assistant and operations support for busy entrepreneurs and business owners across the US.",
+        description: "Manila Cafe is a concept cafe web design project created in Photoshop, featuring a cozy and modern aesthetic tailored for coffee lovers and casual dining experiences.",
         tags: ["Adobe Photoshop"],
         link: "#",
         image: "/images/manila.cafe.jpg"
